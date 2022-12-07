@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <style>
+     h1,h2,h3,p,button,table,td,th,span {
+      font-family: "Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif;
+      width: 90%;
+      margin-left: 5%;
+     }
+
+      div.f {
+	  display: flex;
+	  flex-flow: row nowrap;
+	  justify-content: space-evenly;
+      }
+
+      button {
+	  appearance: button;
+	  background-color: #405cf5;
+	  border-radius: 6px;
+	  color: #fff;`
+	  cursor: pointer;
+	  font-size: 100%;
+	  height: 44px;
+	  position: relative;
+	  text-align: center;
+	  margin: 20px;
+	  width: 16%;
+      }
+    </style>
+
+    <title>Toy restAPI</title>
+    <script>
+      const url_root = "/api";
+
+      // Start here: call this when the page is loaded
+      function init() {
+	  function tick() {
+	      fetch_state();
+	  }
+
+	  fetch_state();
+	  setInterval(tick, 1000);
+      }
+
+      // Handy function to wrap a PUT command. Do it, then fetch the
+      // new state.
+      function put(url, args) {
+	  fetch(url_root + url, { method: 'PUT',
+		       headers: { 'Content-Type': 'application/json' },
+		       body: JSON.stringify(args),
+		     })
+	      .then((r) => fetch_state());
+      }
+
+      // Query state from the API, and update display.
+      function fetch_state() {
+	  fetch(url_root)
+	      .then((response) => response.json())
+	      .then((data)     => update_display(data))
+      }
+
+      // Update the display: HTML element IDs must match returned keys
+      function update_display(d) {
+	  for (var k in d) {
+	      var e = document.getElementById(k);
+	      if (e) {
+		  e.innerText = d[k];
+	      }
+	  }
+      }
+
+      // The following functions are simple wrappers around PUT. Hopefully
+      // their meaning is obvious
+      function set_light(x) {
+	  put("/light", { "brightness": x })
+      }
+
+    </script>
+</head>
+<body onload="init()">
+  <h1>Toy restAPI</h1>
+
+  <h2>Temperature</h2>
+  <p><span id="temperature"></span></p>
+
+
+  <h2>Light</h2>
+  <p><span id="brightness"></span></p>
+
+  <div class="f">
+    <button onclick="set_light(0.0)">
+      OFF
+    </button>
+    <button onclick="set_light(1.0)">
+      ON
+    </button>
+  </div>
+
+  <p><a href="/docs">API documentation</a> is available.</p>
+
+</body>
+
+</html>
