@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
 
   <style>
+    body {
+	background: #bbd;
+    }
+
      h1,h2,h3,p,button,table,td,th,span {
       font-family: "Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif;
       width: 90%;
@@ -19,6 +23,7 @@
       button {
 	  appearance: button;
 	  background-color: #405cf5;
+	  border: none;
 	  border-radius: 6px;
 	  color: #fff;`
 	  cursor: pointer;
@@ -64,11 +69,19 @@
 
       // Update the display: HTML element IDs must match returned keys
       function update_display(d) {
-	  for (var k in d) {
+	  for (var k in d)
+	  {
 	      var e = document.getElementById(k);
 	      if (e) {
 		  e.innerText = d[k];
 	      }
+	  }
+
+	  var e = document.getElementById('brightness_pp');
+	  if (e) {
+	      e.innerText = (d['brightness'] > 0)
+		  ? '💡💡💡💡💡💡💡💡💡💡'
+		  : '';
 	  }
       }
 
@@ -88,7 +101,10 @@
 
 
   <h2>Light</h2>
-  <p><span id="brightness"></span></p>
+
+  <p style="width:100%; height:60px;">
+    <span style="font-size:400%;" id="brightness_pp"></span>
+  </p>
 
   <div class="f">
     <button onclick="set_light(0.0)">
