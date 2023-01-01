@@ -1,5 +1,5 @@
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, status
+from fastapi.responses import FileResponse, PlainTextResponse
 
 from pydantic import BaseModel
 
@@ -30,14 +30,13 @@ def led_init():
     run_as_root("echo none > /sys/class/leds/led0/trigger")
 
 def led_set(x):
-    b = 0
-    if x > 0:
-        b = 255
+    b = 255 if x > 0 else 0
     run_as_root(f"echo {b} > /sys/class/leds/led0/brightness")
 
 def led_get():
-    b = run_as_root("cat /sys/class/leds/led0/brightness")
-    return { 'brightness': b }
+    b = float(run_as_root("cat /sys/class/leds/led0/brightness"))
+    x = 1.0 if b > 0 else 0.0
+    return { 'brightness': x }
 
 #
 # The main HTTP server starts here
@@ -49,13 +48,17 @@ app = FastAPI()
 
 apiroot = "/api"
 
+def client_error(t):
+    return PlainTextResponse(content = t
+                , status_code = status.HTTP_400_BAD_REQUEST)
+
 @app.get('/')
 def get_index():
     return FileResponse('index.html')
 
 @app.get(apiroot)
 def get_all():
-    return (temp_read() | led_get() )
+    return (temp_read() | led_get())
 
 @app.get(apiroot + "/temperature")
 def get_temp():
@@ -70,6 +73,9 @@ class LightControl(BaseModel):
 
 @app.put(apiroot + "/light")
 def put_light(m: LightControl):
-    x = m.brightness
-    led_set(x)
-    return led_get()
+    b = m.brightness
+    if b < 0.0 or b > 1.0:
+        return client_error(f"Brightness {b} out of range [0,1]")
+    else:
+        led_set(b)
+        return led_get()
